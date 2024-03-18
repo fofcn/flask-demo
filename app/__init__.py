@@ -1,5 +1,6 @@
 
 from flask import Flask
+from flask_jwt_extended import JWTManager
 from flask_sqlalchemy import SQLAlchemy
 from flask_bootstrap import Bootstrap4
 
@@ -7,7 +8,9 @@ from app.config.config import FlaskConfig
 
 app = Flask(__name__)
 app.config.from_object(FlaskConfig)
+jwt = JWTManager(app)
 bootstrap = Bootstrap4(app)
+
 
 db = SQLAlchemy(app)
 from sqlalchemy import create_engine
@@ -26,3 +29,6 @@ Base = declarative_base()
 # from middleware import loggermiddleware
 
 from . import helloworld
+from . import user
+from . import exception
+

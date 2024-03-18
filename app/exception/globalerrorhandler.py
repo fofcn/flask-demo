@@ -1,4 +1,4 @@
-from flask import render_template
+from flask import jsonify, render_template
 import werkzeug
 from . import globalexcept
 
@@ -10,5 +10,7 @@ def page_not_found(error):
 
 @globalexcept.errorhandler(Exception)
 def handle_exception(e):
+    code = 500
+    return jsonify(err=str(e)), code
     if isinstance(e, werkzeug.exceptions.HttpException):
         return e

@@ -1,4 +1,6 @@
 Flask
 Flask-SQLAlchemy
+flask-jwt-extended
 psycopg2-binary
 bootstrap-flask
+sqlalchemy-mixins
