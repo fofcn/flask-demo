@@ -1,0 +1,4 @@
+Flask
+pytest 
+coverage
+sentry-sdk[flask]
