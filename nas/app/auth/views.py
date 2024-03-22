@@ -7,6 +7,44 @@ from .. import common
 
 @auth.route('login', methods=['POST'])
 def login():
+    """
+    login with username and password
+    ---
+    tasg:
+      - Auth
+    consumes:
+      - application/json
+    
+    parameters:
+      - in: body
+        name: body
+        schema:
+          type: object
+          required: 
+            - username
+            - password
+          properties:
+            username:
+              type: string
+            password:
+              type: string
+    responses:
+      200:
+        description: Login successfully
+      schema:
+        type: object
+        properties:
+        bizCode: 
+          type: integer
+          description: Auth should return 0
+        msg:
+          type: string
+          description: empty string when success, error reason otherwise
+        data: 
+          type: string
+          description: only access token returned when success
+
+    """
     username = request.json.get("username", None)
     password = request.json.get("password", None)
     
