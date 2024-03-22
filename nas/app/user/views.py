@@ -1,4 +1,4 @@
-import hashlib
+import bcrypt
 from flask import request
 from flask_jwt_extended import jwt_required
 from sqlalchemy.exc import IntegrityError
@@ -6,18 +6,15 @@ from . import models, user
 from .. import db
 from .. import common
 
-@user.route('/list', methods=['GET'])
-@jwt_required()
-def listUser():
-    return {}
 
-@user.route('/create', methods=['POST'])
+@user.route('/register', methods=['POST'])
 def createUser():
-    hashed_pwd = hashlib.sha256(request.json.get('password').encode()).hexdigest()
+    pwd = request.json.get('password')
+    hashed_pwd = bcrypt.hashpw(pwd.encode('utf-8'), bcrypt.gensalt())
 
     try:
         user = models.User(username=request.json.get('username'),
-                        password=hashed_pwd,
+                            password=hashed_pwd.decode(),
                             email=request.json.get('email'),
                             full_name=request.json.get('full_name'))
         db.session.add(user)

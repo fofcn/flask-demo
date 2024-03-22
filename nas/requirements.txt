@@ -6,3 +6,4 @@ bootstrap-flask
 sqlalchemy-mixins
 flask-swagger
 flask_swagger_ui
+bcrypt

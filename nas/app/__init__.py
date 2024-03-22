@@ -19,7 +19,16 @@ def create_app(test_config=None):
     bootstrap = Bootstrap4(app)
     db.init_app(app=app)
 
+
     
+    
+    api_v1 = Blueprint('api_v1', __name__, url_prefix='/api/v1')
+    from . import auth
+    api_v1.register_blueprint(auth.auth)
+    from . import user
+    api_v1.register_blueprint(user.user)
+    from . import fs
+    api_v1.register_blueprint(fs.file)
 
     @jwt.user_identity_loader
     def user_identity_lookup(user):
@@ -28,19 +37,13 @@ def create_app(test_config=None):
     @jwt.user_lookup_loader
     def user_lookup_callback(_jwt_header, jwt_data):
         identity = jwt_data["sub"]
-        return user.User.query.filter_by(id=identity).one_or_none()
-    
-    api_v1 = Blueprint('api_v1', __name__, url_prefix='/api/v1')
-    from . import auth
-    api_v1.register_blueprint(auth.auth)
-    from . import user
-    api_v1.register_blueprint(user.user)
-    from . import fs
+        from . import user
+        return user.models.User.query.filter_by(id=identity).one_or_none()
 
     with app.app_context():
         db.create_all()
 
-    @app.route("/api/v1/spec")
+    @api_v1.route("/spec")
     def spec():
         swag = swagger(app)
         swag['info']['version'] = 'v1.0.0'
@@ -61,7 +64,8 @@ def create_app(test_config=None):
             'app_name': 'NAS'
         }
     )
-    api_v1.register_blueprint(swagger_ui_blueprint, url_prefix=SWAGGER_URL)
+    # api_v1.register_blueprint(swagger_ui_blueprint, url_prefix=SWAGGER_URL)
+    app.register_blueprint(swagger_ui_blueprint)
     app.register_blueprint(api_v1)
    
 
