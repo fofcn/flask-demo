@@ -8,10 +8,11 @@ from ..auth import models, dto
 from . import models
 from .. import user
 from ..common import dto
+from ..common import jwt_wrapper
 from .. import db
 
 @file.route('/list', methods=['GET'])
-@jwt_required()
+@jwt_wrapper.jwt_required_ext(optional=False)
 def listFiles():
     """
     summary:list files or directories
@@ -66,7 +67,7 @@ components:
 
 
 @file.route('', methods=['POST'])
-@jwt_required()
+@jwt_wrapper.jwt_required_ext(optional=False)
 def uploadFile():
     save_path = request.form['save_path']
     parent_id = request.form['parent_id']

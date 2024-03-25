@@ -5,9 +5,11 @@ from sqlalchemy.exc import IntegrityError
 from . import models, user
 from .. import db
 from .. import common
+from ..common import jwt_wrapper
 
 
 @user.route('/register', methods=['POST'])
+@jwt_wrapper.jwt_required_ext(optional=False)
 def createUser():
     pwd = request.json.get('password')
     hashed_pwd = bcrypt.hashpw(pwd.encode('utf-8'), bcrypt.gensalt())
