@@ -1,14 +1,15 @@
 
 import datetime
+import os
+import time
 import uuid
-from flask import request
-from flask_jwt_extended import current_user, jwt_required
+from flask import current_app, request
+from flask_jwt_extended import current_user
 from . import file
 from ..auth import models, dto
-from . import models
+from . import models, enums
 from .. import user
-from ..common import dto
-from ..common import jwt_wrapper
+from ..common import const, dto, jwt_wrapper
 from .. import db
 
 @file.route('/list', methods=['GET'])
@@ -89,7 +90,7 @@ def uploadFile():
         filename = filename,
         file_type = file_type,
         content_type = content_type,
-        deleted = 0,
+        deleted = const.NO_DELETED,
         file_created_time = created_time,
         file_modified_time = modified_time,
         created_time = datetime.now(),
@@ -99,7 +100,45 @@ def uploadFile():
 
     return dto.make_success_resp(2, None)
 
+@file.route('/dir', methods=['POST'])
+@jwt_wrapper.jwt_required_ext(optional=False)
+def create_directory():
+    parent_id = request.json.get('parent_id')
+    dir_name = request.json.get('dir_name')
+    user_id = current_user.id
+
+    parent_dir = models.FileInfo.query.filter_by(id, deleted=const.NO_DELETED).one_or_none()
+    if not parent_dir:
+        return dto.make_response(2, 'parent direcotry is not existing ')
+
+
+    # check parent_id and direcotry exists
+    # it's better to add a distributed lock here
+    dir = models.FileInfo.query.filter_by(user_id=user_id, 
+                                    parent_id=parent_id, 
+                                    file_type=enums.FileType.DIRECTORY, 
+                                    content_type=enums.ContentType.DIRECTORY, 
+                                    deleted=const.NO_DELETED).one_or_none()
+    if dir:
+        return dto.make_response(2, f'direcotry has already existed in {parent_dir.orgi_filename}')
     
+    dir_path = current_app.config['NAS_STORE_PATH']
 
+    os.mkdir(dir_path + '/' + dir_name)
+    fileinfo = models.FileInfo(
+        user_id = current_user.id,
+        parent_id = parent_id,
+        orgi_filename  = dir_name,
+        filename = uuid.uuid1(),
+        file_type = enums.FileType.DIRECTORY,
+        content_type = enums.ContentType.DIRECTORY,
+        deleted = const.NO_DELETED,
+        file_created_time = datetime.now(),
+        file_modified_time = datetime.now(),
+        created_time = datetime.now(),
+    )
 
+    db.session.add(fileinfo)
+
+    return dto.make_success_resp(2, {id: fileinfo.id})
 
